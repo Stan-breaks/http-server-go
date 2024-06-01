@@ -1,5 +1,7 @@
 # Simple HTTP Server
+
 This is a simple HTTP server implemented in Go. It supports the following functionalities:
+
 ## Features
 
 1. Echo Server: Upon receiving a GET request to /echo/..., the server will respond with the text following /echo/ as the response body.
@@ -11,6 +13,7 @@ This is a simple HTTP server implemented in Go. It supports the following functi
 Usage
 
 Compile the Go code and run it:
+
 ```bash
 go run app/server.go
 ```
