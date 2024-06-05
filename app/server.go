@@ -28,25 +28,8 @@ func handleget(conn net.Conn, request Request) {
 		}
 	} else if request.Path[0:6] == "/echo/" {
 		echo := request.Path[6:]
-		fileEncoding := " "
-		if len(lines) > 2 {
-			if lines[2] != "" {
-				if strings.Split(lines[2], ": ")[1] == "gzip" {
-					fileEncoding = "gzip"
-				} else {
-					if len(strings.Split(lines[2], ": ")[1]) > 4 {
-						list := strings.Split(strings.Split(lines[2], ": ")[1], ", ")
-						for i := 0; i < len(list); i++ {
-							if list[i] == "gzip" {
-								fileEncoding = "gzip"
-								break
-							}
-						}
-					}
-				}
-			}
-		}
-		if fileEncoding != " " {
+		fileEncoding, ok := request.Headers["Accept-Encoding"]
+		if ok {
 			buffer := new(bytes.Buffer)
 			writer := gzip.NewWriter(buffer)
 			_, err = writer.Write([]byte(echo))
@@ -63,7 +46,7 @@ func handleget(conn net.Conn, request Request) {
 			return
 		}
 	} else if request.Path[0:7] == "/files/" {
-		filepath := path[7:]
+		filepath := request.Path[7:]
 		dir := os.Args[2]
 		data, err := os.ReadFile(dir + filepath)
 		if err != nil {
@@ -79,8 +62,8 @@ func handleget(conn net.Conn, request Request) {
 				return
 			}
 		}
-	} else if path == "/user-agent" {
-		userAgent := strings.Split(lines[2], ": ")[1]
+	} else if request.Path == "/user-agent" {
+		userAgent := request.Headers["User-Agent"]
 		_, err = conn.Write([]byte("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + fmt.Sprintf("%d", len(userAgent)) + "\r\n\r\n" + userAgent))
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
@@ -95,12 +78,12 @@ func handleget(conn net.Conn, request Request) {
 	}
 }
 
-func handlepost(conn net.Conn, path string) {
+func handlepost(conn net.Conn, request Request) {
 	defer conn.Close()
-	if path[0:7] == "/files/" {
-		filepath := path[7:]
+	if request.Path[0:7] == "/files/" {
+		filepath := request.Path[7:]
 		dir := os.Args[2]
-		data := strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00")
+		data := request.Body
 		err := os.WriteFile(dir+filepath, []byte(data), 0644)
 		if err != nil {
 			fmt.Println("Error writing into file", err.Error())
@@ -142,13 +125,12 @@ func handleconnection(conn net.Conn) {
 		}(),
 		Body: strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00"),
 	}
-
 	fmt.Println("Request: ", request.Method)
 	fmt.Println("Path: ", request.Path)
 	if request.Method == "GET" {
-		handleget(conn)
+		handleget(conn, request)
 	} else {
-		handlepost(conn)
+		handlepost(conn, request)
 	}
 }
 
@@ -166,6 +148,5 @@ func main() {
 			continue
 		}
 		handleconnection(conn)
-
 	}
 }
