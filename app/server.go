@@ -10,15 +10,24 @@ import (
 	"strings"
 )
 
-func handleget(conn net.Conn, path string) {
-	if path == "/" {
+type Request struct {
+	Method  string
+	Path    string
+	Headers map[string]string
+	Body    string
+}
+
+func handleget(conn net.Conn, request Request) {
+	defer conn.Close()
+	err := error(nil)
+	if request.Path == "/" {
 		_, err = conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return
 		}
-	} else if path[0:6] == "/echo/" {
-		echo := path[6:]
+	} else if request.Path[0:6] == "/echo/" {
+		echo := request.Path[6:]
 		fileEncoding := " "
 		if len(lines) > 2 {
 			if lines[2] != "" {
@@ -53,7 +62,7 @@ func handleget(conn net.Conn, path string) {
 			fmt.Println("Error writing response:", err.Error())
 			return
 		}
-	} else if path[0:7] == "/files/" {
+	} else if request.Path[0:7] == "/files/" {
 		filepath := path[7:]
 		dir := os.Args[2]
 		data, err := os.ReadFile(dir + filepath)
@@ -86,6 +95,26 @@ func handleget(conn net.Conn, path string) {
 	}
 }
 
+func handlepost(conn net.Conn, path string) {
+	defer conn.Close()
+	if path[0:7] == "/files/" {
+		filepath := path[7:]
+		dir := os.Args[2]
+		data := strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00")
+		err := os.WriteFile(dir+filepath, []byte(data), 0644)
+		if err != nil {
+			fmt.Println("Error writing into file", err.Error())
+			return
+		} else {
+			_, err = conn.Write([]byte("HTTP/1.1 201 Created\r\n\r\n"))
+			if err != nil {
+				fmt.Println("Error writing response:", err.Error())
+				return
+			}
+		}
+	}
+}
+
 func handleconnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
@@ -96,30 +125,30 @@ func handleconnection(conn net.Conn) {
 	}
 	fmt.Println("Received data: ", string(buf))
 	lines := strings.Split(string(buf), "\r\n")
-	path := strings.Split(lines[0], " ")[1]
-	request := strings.Trim(strings.Split(lines[0], " ")[0], " ")
-
-	fmt.Println("Request: ", request)
-	fmt.Println("Path: ", path)
-	if request == "GET" {
-		handleget(conn, path)
-	} else {
-		if path[0:7] == "/files/" {
-			filepath := path[7:]
-			dir := os.Args[2]
-			data := strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00")
-			err := os.WriteFile(dir+filepath, []byte(data), 0644)
-			if err != nil {
-				fmt.Println("Error writing into file", err.Error())
-				return
-			} else {
-				_, err = conn.Write([]byte("HTTP/1.1 201 Created\r\n\r\n"))
-				if err != nil {
-					fmt.Println("Error writing response:", err.Error())
-					return
+	request := Request{
+		Method: strings.Trim(strings.Split(lines[0], " ")[0], " "),
+		Path:   strings.Split(lines[0], " ")[1],
+		Headers: func() map[string]string {
+			headers := make(map[string]string)
+			for _, header := range lines[1:] {
+				parts := strings.Split(header, ":")
+				if len(parts) == 2 {
+					key := strings.TrimSpace(parts[0])
+					value := strings.TrimSpace(parts[1])
+					headers[key] = value
 				}
 			}
-		}
+			return headers
+		}(),
+		Body: strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00"),
+	}
+
+	fmt.Println("Request: ", request.Method)
+	fmt.Println("Path: ", request.Path)
+	if request.Method == "GET" {
+		handleget(conn)
+	} else {
+		handlepost(conn)
 	}
 }
 
