@@ -84,12 +84,43 @@ func handlepost(conn net.Conn, request Request) {
 		filepath := request.Path[7:]
 		dir := os.Args[2]
 		data := request.Body
-		err := os.WriteFile(dir+"/"+filepath, []byte(data), 0644)
+		err := os.WriteFile(dir+"/"+filepath, []byte(data+"\n"), 0644)
 		if err != nil {
 			fmt.Println("Error writing into file", err.Error())
 			return
+		}
+		_, err = conn.Write([]byte("HTTP/1.1 201 Created\r\n\r\n"))
+		if err != nil {
+			fmt.Println("Error writing response:", err.Error())
+			return
+		}
+	}
+}
+
+func handleput(conn net.Conn, request Request) {
+	defer conn.Close()
+	if request.Path[0:7] == "/files/" {
+		filepath := request.Path[7:]
+		dir := os.Args[2]
+		writeData := request.Body
+		readData, err := os.ReadFile(dir + "/" + filepath)
+		if err != nil {
+			_, err = conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+			if err != nil {
+				fmt.Println("Error writing response:", err.Error())
+				return
+			}
 		} else {
-			_, err = conn.Write([]byte("HTTP/1.1 201 Created\r\n\r\n"))
+			buffer := new(bytes.Buffer)
+			buffer.Write(readData)
+			buffer.Write([]byte(writeData + "\n"))
+			data := buffer.Bytes()
+			err = os.WriteFile(dir+"/"+filepath, data, 0644)
+			if err != nil {
+				fmt.Println("Error with writing to file :", err.Error())
+				return
+			}
+			_, err = conn.Write([]byte("HTTP/1.1 204 Put Successfull\r\n\r\n"))
 			if err != nil {
 				fmt.Println("Error writing response:", err.Error())
 				return
@@ -129,8 +160,13 @@ func handleconnection(conn net.Conn) {
 	fmt.Println("Path: ", request.Path)
 	if request.Method == "GET" {
 		handleget(conn, request)
-	} else {
+	} else if request.Method == "PUT" {
+		handleput(conn, request)
+	} else if request.Method == "POST" {
 		handlepost(conn, request)
+	} else {
+		fmt.Println("Invalid request method")
+		return
 	}
 }
 
