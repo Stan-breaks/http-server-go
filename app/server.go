@@ -129,6 +129,27 @@ func handleput(conn net.Conn, request Request) {
 	}
 }
 
+func handledelete(conn net.Conn, request Request) {
+	defer conn.Close()
+	if request.Path == "/files/" {
+		filepath := request.Path[7:]
+		dir := os.Args[2]
+		err := os.Remove(dir + "/" + filepath)
+		fmt.Println(dir + "/" + filepath)
+		if err != nil {
+			_, err = conn.Write([]byte("HTTP/1.1 500 Internal Server Error\r\n\r\n"))
+			fmt.Println("Error with deleting the file", err.Error())
+			return
+		}
+		_, err = conn.Write([]byte("HTTP/1.1 204 No Content\r\n\r\n"))
+		if err != nil {
+			fmt.Println("Error writing response:", err.Error())
+			return
+		}
+
+	}
+}
+
 func handleconnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
@@ -156,17 +177,22 @@ func handleconnection(conn net.Conn) {
 		}(),
 		Body: strings.Trim(strings.Split(string(buf), "\r\n\r\n")[1], "\x00"),
 	}
-	fmt.Println("Request: ", request.Method)
-	fmt.Println("Path: ", request.Path)
 	if request.Method == "GET" {
 		handleget(conn, request)
 	} else if request.Method == "PUT" {
 		handleput(conn, request)
 	} else if request.Method == "POST" {
 		handlepost(conn, request)
+	} else if request.Method == "DELETE" {
+		handledelete(conn, request)
 	} else {
 		fmt.Println("Invalid request method")
-		return
+		_, err = conn.Write([]byte("HTTP/1.1 500 Internal Server Error"))
+		if err != nil {
+			fmt.Println("Error writing response:", err.Error())
+			return
+
+		}
 	}
 }
 
