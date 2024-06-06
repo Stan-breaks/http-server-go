@@ -131,11 +131,10 @@ func handleput(conn net.Conn, request Request) {
 
 func handledelete(conn net.Conn, request Request) {
 	defer conn.Close()
-	if request.Path == "/files/" {
+	if request.Path[0:7] == "/files/" {
 		filepath := request.Path[7:]
 		dir := os.Args[2]
 		err := os.Remove(dir + "/" + filepath)
-		fmt.Println(dir + "/" + filepath)
 		if err != nil {
 			_, err = conn.Write([]byte("HTTP/1.1 500 Internal Server Error\r\n\r\n"))
 			fmt.Println("Error with deleting the file", err.Error())
