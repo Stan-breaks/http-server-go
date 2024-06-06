@@ -48,7 +48,7 @@ func handleget(conn net.Conn, request Request) {
 	} else if request.Path[0:7] == "/files/" {
 		filepath := request.Path[7:]
 		dir := os.Args[2]
-		data, err := os.ReadFile(dir + filepath)
+		data, err := os.ReadFile(dir + "/" + filepath)
 		if err != nil {
 			_, err = conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
 			if err != nil {
@@ -84,7 +84,7 @@ func handlepost(conn net.Conn, request Request) {
 		filepath := request.Path[7:]
 		dir := os.Args[2]
 		data := request.Body
-		err := os.WriteFile(dir+filepath, []byte(data), 0644)
+		err := os.WriteFile(dir+"/"+filepath, []byte(data), 0644)
 		if err != nil {
 			fmt.Println("Error writing into file", err.Error())
 			return
