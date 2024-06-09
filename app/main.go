@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./models"
-	"./router"
+	"codecrafters-http-server-go/app/models"
+	"codecrafters-http-server-go/app/router"
 	"fmt"
 	"net"
 	"os"
@@ -17,7 +17,6 @@ func handleconnection(conn net.Conn) {
 		fmt.Println("Error reading:", err.Error())
 		return
 	}
-	fmt.Println("Received data: ", string(buf))
 	lines := strings.Split(string(buf), "\r\n")
 	request := models.Request{
 		Method: strings.Trim(strings.Split(lines[0], " ")[0], " "),
