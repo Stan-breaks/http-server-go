@@ -1,8 +1,8 @@
 package router
 
 import (
-	"app/codecrafters-http-server-go/handlers"
-	"app/codecrafters-http-server-go/models"
+	"codecrafters-http-server-go/app/handlers"
+	"codecrafters-http-server-go/app/models"
 	"net"
 )
 

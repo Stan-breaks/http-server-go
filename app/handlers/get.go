@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"codecrafters-http-server-go/app/models"
 	"codecrafters-http-server-go/app/utils"
-	"bytes"
 	"compress/gzip"
 	"fmt"
 	"net"
