@@ -3,6 +3,8 @@ package router
 import (
 	"codecrafters-http-server-go/app/handlers"
 	"codecrafters-http-server-go/app/models"
+	"codecrafters-http-server-go/app/utils"
+	"fmt"
 	"net"
 )
 
@@ -17,6 +19,9 @@ func Route(conn net.Conn, request models.Request) {
 	case "DELETE":
 		handlers.Delete(conn, request)
 	default:
-		break
+		err := utils.WriteResponse(conn, 405, nil, "")
+		if err != nil {
+			fmt.Println("Error with with writing", err.Error())
+		}
 	}
 }
