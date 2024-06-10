@@ -13,7 +13,7 @@ import (
 func Get(conn net.Conn, request models.Request) {
 	err := error(nil)
 	if request.Path == "/" {
-		err = utils.WriteResponse(conn, 200, nil, "")
+		err = utils.WriteResponse(conn, 200, nil, "", request)
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return
@@ -32,9 +32,9 @@ func Get(conn net.Conn, request models.Request) {
 			headers := map[string]string{
 				"Content-Encoding": fileEncoding,
 			}
-			err = utils.WriteResponse(conn, 200, headers, buffer.String())
+			err = utils.WriteResponse(conn, 200, headers, buffer.String(), request)
 		} else {
-			err = utils.WriteResponse(conn, 200, nil, echo)
+			err = utils.WriteResponse(conn, 200, nil, echo, request)
 		}
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
@@ -45,7 +45,7 @@ func Get(conn net.Conn, request models.Request) {
 		dir := os.Args[2]
 		data, err := os.ReadFile(dir + "/" + filepath)
 		if err != nil {
-			err = utils.WriteResponse(conn, 404, nil, "")
+			err = utils.WriteResponse(conn, 404, nil, "", request)
 			if err != nil {
 				fmt.Println("Error writing response:", err.Error())
 				return
@@ -54,7 +54,7 @@ func Get(conn net.Conn, request models.Request) {
 			headers := map[string]string{
 				"Content-Type": "application/octet-stream",
 			}
-			err = utils.WriteResponse(conn, 200, headers, string(data))
+			err = utils.WriteResponse(conn, 200, headers, string(data), request)
 			if err != nil {
 				fmt.Println("Error writing response:", err.Error())
 				return
@@ -65,13 +65,13 @@ func Get(conn net.Conn, request models.Request) {
 		headers := map[string]string{
 			"Content-Type": "text/plain",
 		}
-		err = utils.WriteResponse(conn, 200, headers, userAgent)
+		err = utils.WriteResponse(conn, 200, headers, userAgent, request)
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return
 		}
 	} else {
-		err = utils.WriteResponse(conn, 404, nil, "")
+		err = utils.WriteResponse(conn, 404, nil, "", request)
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return

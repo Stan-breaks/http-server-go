@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"codecrafters-http-server-go/app/models"
 	"fmt"
 	"net"
 )
 
-func WriteResponse(conn net.Conn, statusCode int, headers map[string]string, body string) error {
+func WriteResponse(conn net.Conn, statusCode int, headers map[string]string, body string, request models.Request) error {
 	stringHeaders := ""
 
 	for key, value := range headers {
@@ -31,6 +32,7 @@ func WriteResponse(conn net.Conn, statusCode int, headers map[string]string, bod
 	if err != nil {
 		return err
 	} else {
+		fmt.Println(request.Method + "  " + fmt.Sprintf("%d",statusCode) + "  " + request.Path)
 		return nil
 	}
 }

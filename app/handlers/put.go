@@ -16,7 +16,7 @@ func Put(conn net.Conn, request models.Request) {
 		writeData := request.Body
 		readData, err := os.ReadFile(dir + "/" + filepath)
 		if err != nil {
-			err = utils.WriteResponse(conn, 404, nil, "")
+			err = utils.WriteResponse(conn, 404, nil, "", request)
 			if err != nil {
 				fmt.Println("Error writing response:", err.Error())
 				return
@@ -31,7 +31,7 @@ func Put(conn net.Conn, request models.Request) {
 				fmt.Println("Error with writing to file :", err.Error())
 				return
 			}
-			err = utils.WriteResponse(conn, 200, nil, "")
+			err = utils.WriteResponse(conn, 200, nil, "", request)
 			if err != nil {
 				fmt.Println("Error writing response:", err.Error())
 				return

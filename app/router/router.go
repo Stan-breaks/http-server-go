@@ -19,7 +19,7 @@ func Route(conn net.Conn, request models.Request) {
 	case "DELETE":
 		handlers.Delete(conn, request)
 	default:
-		err := utils.WriteResponse(conn, 405, nil, "")
+		err := utils.WriteResponse(conn, 405, nil, "", request)
 		if err != nil {
 			fmt.Println("Error with with writing", err.Error())
 		}
