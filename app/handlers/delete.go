@@ -22,11 +22,11 @@ func Delete(conn net.Conn, request models.Request) {
 		}
 		err = os.Remove(dir + "/" + filepath)
 		if err != nil {
-			err = utils.WriteResponse(conn, 500, nil, "",request)
+			err = utils.WriteResponse(conn, 500, nil, "", request)
 			fmt.Println("Error with deleting the file", err.Error())
 			return
 		}
-		err = utils.WriteResponse(conn, 204, nil, "",request)
+		err = utils.WriteResponse(conn, 204, nil, "", request)
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return

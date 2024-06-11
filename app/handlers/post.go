@@ -18,7 +18,7 @@ func Post(conn net.Conn, request models.Request) {
 			fmt.Println("Error writing into file", err.Error())
 			return
 		}
-		err = utils.WriteResponse(conn, 201, nil, "",request)
+		err = utils.WriteResponse(conn, 201, nil, "", request)
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return

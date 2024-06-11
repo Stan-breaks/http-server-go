@@ -32,7 +32,7 @@ func WriteResponse(conn net.Conn, statusCode int, headers map[string]string, bod
 	if err != nil {
 		return err
 	} else {
-		fmt.Println(request.Method + "  " + fmt.Sprintf("%d",statusCode) + "  " + request.Path)
+		fmt.Println(request.Method + "  " + fmt.Sprintf("%d", statusCode) + "  " + request.Path)
 		return nil
 	}
 }
