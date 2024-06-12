@@ -51,11 +51,10 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
-		handleconnection(conn)
+		go handleconnection(conn)
 	}
 }
 
 // make it secure
 // process all file types
-// learn go routines and handle the connections with it.
 // we to make it possible to process json forms
