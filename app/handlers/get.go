@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func Get(conn net.Conn, request models.Request) {
@@ -51,8 +52,10 @@ func Get(conn net.Conn, request models.Request) {
 				return
 			}
 		} else {
+			ext := strings.Split(filepath, ".")[1]
+			ext = "." + ext
 			headers := map[string]string{
-				"Content-Type": "application/octet-stream",
+				"Content-Type": utils.ContentTypes[ext],
 			}
 			err = utils.WriteResponse(conn, 200, headers, string(data), request)
 			if err != nil {
