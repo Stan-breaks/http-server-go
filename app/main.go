@@ -54,7 +54,3 @@ func main() {
 		go handleconnection(conn)
 	}
 }
-
-// make it secure
-// process all file types
-// we to make it possible to process json forms
